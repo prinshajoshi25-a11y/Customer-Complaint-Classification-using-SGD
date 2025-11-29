@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Complaint Classification System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Poppins", sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            top: -250px;
+            right: -250px;
+            animation: float 15s infinite ease-in-out;
+        }
+
+        body::after {
+            content: '';
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 50%;
+            bottom: -200px;
+            left: -200px;
+            animation: float 12s infinite ease-in-out reverse;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-30px) rotate(180deg); }
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 750px;
+            padding: 35px 45px;
+            text-align: center;
+            position: relative;
+            z-index: 10;
+            animation: slideUp 0.6s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header-icon {
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 18px;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .header-icon::before {
+            content: '📝';
+            font-size: 35px;
+        }
+
+        h2 {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 1.9rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            line-height: 1.2;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 25px;
+            font-weight: 400;
+        }
+
+        .form-group {
+            position: relative;
+            margin-bottom: 18px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 160px;
+            border: 2px solid #e0e0e0;
+            border-radius: 16px;
+            padding: 16px;
+            padding-bottom: 35px;
+            resize: none;
+            outline: none;
+            font-size: 15px;
+            font-family: "Poppins", sans-serif;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+            line-height: 1.5;
+        }
+
+        textarea:focus {
+            border-color: #667eea;
+            background: #fff;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+            transform: translateY(-2px);
+        }
+
+        textarea::placeholder {
+            color: #aaa;
+        }
+
+        .char-count {
+            position: absolute;
+            bottom: 28px;
+            right: 18px;
+            font-size: 0.75rem;
+            color: #999;
+            pointer-events: none;
+            font-weight: 500;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 16px;
+            padding: 15px 35px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+
+        button:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s;
+        }
+
+        button:hover:not(:disabled)::before {
+            left: 100%;
+        }
+
+        button:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.5);
+        }
+
+        button:active:not(:disabled) {
+            transform: translateY(-1px);
+        }
+
+        .category-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .tag {
+            background: linear-gradient(135deg, #e0e7ff, #f3e8ff);
+            color: #5b21b6;
+            padding: 6px 12px;
+            border-radius: 18px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.15);
+            transition: all 0.3s ease;
+        }
+
+        .tag:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.25);
+        }
+
+        .prediction-box {
+            margin-top: 22px;
+            padding: 20px;
+            background: linear-gradient(135deg, #f0f4ff, #faf5ff);
+            border-radius: 16px;
+            border: 2px solid #e0e7ff;
+            min-height: 60px;
+            transition: all 0.4s ease;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .prediction-box p {
+            margin: 0;
+            font-size: 1.05rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            line-height: 1.4;
+        }
+
+        .prediction-box .success {
+            color: #059669;
+        }
+
+        .prediction-box .error {
+            color: #dc2626;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 30px 25px;
+            }
+
+            h2 {
+                font-size: 1.6rem;
+            }
+
+            .header-icon {
+                width: 60px;
+                height: 60px;
+            }
+
+            .header-icon::before {
+                font-size: 30px;
+            }
+
+            textarea {
+                height: 140px;
+                font-size: 14px;
+            }
+
+            button {
+                font-size: 15px;
+                padding: 14px 28px;
+            }
+
+            .tag {
+                font-size: 0.75rem;
+                padding: 5px 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header-icon"></div>
+        <h2>Customer Complaint Classification System</h2>
+        <p class="subtitle">ML-powered complaint categorization for better service</p>
+        
+        <form action="/" method="POST" id="complaintForm">
+            <div class="form-group">
+                <textarea 
+                    id="complaintText" 
+                    name="complaint" 
+                    placeholder="Describe your complaint here..." 
+                    required
+                    maxlength="1000">{{ complaint_text }}</textarea>
+                <span class="char-count" id="charCount">0/1000</span>
+            </div>
+            <button type="submit">Predict Complaint</button>
+        </form>
+
+        <div class="category-tags">
+            <span class="tag">🏦 Bank Account</span>
+            <span class="tag">💳 Credit Card</span>
+            <span class="tag">📋 Credit Report</span>
+            <span class="tag">📞 Debt Collection</span>
+            <span class="tag">💰 Loan</span>
+            <span class="tag">💸 Money Transfer</span>
+            <span class="tag">🏠 Mortgage</span>
+        </div>
+
+       {% if prediction_text %}
+<div id="prediction" class="prediction-box">
+    {% if '✅' in prediction_text %}
+        <p class="success">{{ prediction_text }}</p>
+
+        {% if confidence %}
+            <p style="color:#4f46e5; font-weight:600; font-size:0.95rem;">
+                🔍 Confidence Score: {{ confidence }}%
+            </p>
+        {% endif %}
+
+    {% else %}
+        <p class="error">{{ prediction_text }}</p>
+    {% endif %}
+</div>
+{% endif %}
+
+    <script>
+        const complaintTextarea = document.getElementById('complaintText');
+        const charCount = document.getElementById('charCount');
+        const predictionBox = document.getElementById('prediction');
+
+        function updateCharCount() {
+            const length = complaintTextarea.value.length;
+            charCount.textContent = `${length}/1000`;
+            charCount.style.color = length > 900 ? '#dc2626' : '#999';
+        }
+
+        complaintTextarea.addEventListener('input', function() {
+            updateCharCount();
+            
+            if (predictionBox && !predictionBox.classList.contains('hidden')) {
+                predictionBox.classList.add('hidden');
+            }
+        });
+        
+        updateCharCount();
+    </script>
+</body>
+</html>
